@@ -1,0 +1,32 @@
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,"Tahoma",sans-serif;background:#f3f6f4;color:#17201b}
+header{background:#166534;color:white;text-align:center;padding:25px 15px}
+header h1{margin:0 0 8px}
+.container{max-width:900px;margin:25px auto;padding:0 15px}
+.card{background:white;border-radius:16px;padding:22px;margin-bottom:18px;box-shadow:0 4px 18px #0000000d}
+.center{text-align:center}
+.badge{display:inline-block;background:#dcfce7;color:#166534;padding:7px 14px;border-radius:20px;font-weight:bold}
+.hizb{font-size:30px;font-weight:bold;color:#166534;margin:12px}
+.stats{display:flex;justify-content:space-around;text-align:center;gap:10px}
+.stats div{flex:1}
+.stats strong{display:block;font-size:30px;color:#166534}
+.stats span{color:#666}
+.bar{height:18px;background:#e5e7eb;border-radius:20px;overflow:hidden;margin-top:20px}
+.bar div{height:100%;width:0;background:#16a34a;transition:.3s}
+select,input{width:100%;padding:13px;border:1px solid #d1d5db;border-radius:9px;font-size:16px;margin:6px 0}
+button{border:0;border-radius:9px;padding:11px 15px;font-size:15px;cursor:pointer}
+.primary{background:#166534;color:white;width:100%;margin-top:8px}
+.danger{background:#dc2626;color:white}
+.admin-link{display:inline-block;background:#1e3a8a;color:white;text-decoration:none;padding:12px 20px;border-radius:9px}
+.list{display:grid;gap:10px}
+.person{display:flex;align-items:center;justify-content:space-between;padding:13px;border:1px solid #e5e7eb;border-radius:10px;background:#fafafa}
+.person.done{background:#f0fdf4;border-color:#bbf7d0}
+.small-ok{background:#166534;color:white}
+.small-danger{background:#dc2626;color:white}
+.success{background:#f0fdf4;color:#166534;padding:12px;border-radius:9px;margin-top:10px}
+.warning{background:#fff7ed;color:#9a3412;padding:12px;border-radius:9px;margin-top:10px}
+.hint{color:#666}
+.hidden{display:none!important}
+.topline{display:flex;justify-content:space-between;align-items:flex-start;gap:15px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.stats{flex-direction:column}.person{gap:10px}.topline{flex-direction:column}.danger{align-self:stretch}.two{grid-template-columns:1fr}}

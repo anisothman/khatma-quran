@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>إشراف الختمة</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+
+<body>
+
+<header>
+
+  <h1>🔐 لوحة إشراف الختمة</h1>
+
+  <p>تحكم كامل في المشاركين والأسابيع</p>
+
+</header>
+
+
+<main class="container">
+
+
+<!-- =========================
+     LOGIN
+========================= -->
+
+<section id="loginCard" class="card">
+
+  <h2>دخول المشرف</h2>
+
+  <input
+    id="email"
+    type="email"
+    placeholder="البريد الإلكتروني"
+  >
+
+  <input
+    id="password"
+    type="password"
+    placeholder="كلمة المرور"
+  >
+
+  <button
+    class="primary"
+    id="loginBtn"
+  >
+    دخول
+  </button>
+
+  <div id="loginMsg"></div>
+
+</section>
+
+
+<!-- =========================
+     ADMIN APP
+========================= -->
+
+<section id="adminApp" class="hidden">
+
+
+<!-- =========================
+     WEEK INFO
+========================= -->
+
+<div class="card">
+
+  <div class="topline">
+
+    <div>
+
+      <div
+        class="badge"
+        id="week"
+      >
+        الأسبوع
+      </div>
+
+      <h2>
+        متابعة الختمة
+      </h2>
+
+    </div>
+
+    <button
+      class="danger"
+      id="logoutBtn"
+    >
+      خروج
+    </button>
+
+  </div>
+
+
+  <div class="stats">
+
+    <div>
+      <strong id="done">0</strong>
+      <span>قرأوا</span>
+    </div>
+
+    <div>
+      <strong id="left">0</strong>
+      <span>لم يقرأوا</span>
+    </div>
+
+    <div>
+      <strong id="percent">0%</strong>
+      <span>الإنجاز</span>
+    </div>
+
+  </div>
+
+
+  <div class="bar">
+    <div id="bar"></div>
+  </div>
+
+</div>
+
+
+<!-- =========================
+     COMPLETED
+========================= -->
+
+<div class="card">
+
+  <h2>✅ قرأوا</h2>
+
+  <p class="hint">
+    المشاركون الذين تم تأكيد قراءتهم لهذا الأسبوع.
+  </p>
+
+  <div
+    id="donePeople"
+    class="list"
+  ></div>
+
+</div>
+
+
+<!-- =========================
+     NOT COMPLETED
+========================= -->
+
+<div class="card">
+
+  <h2>⏳ لم يقرأوا</h2>
+
+  <p class="hint">
+    يمكنك تأكيد القراءة يدويًا.
+  </p>
+
+  <div
+    id="pendingPeople"
+    class="list"
+  ></div>
+
+</div>
+
+
+<!-- =========================
+     NEXT WEEK
+========================= -->
+
+<div class="card">
+
+  <h2>🔄 الانتقال للختمة التالية</h2>
+
+  <p>
+    سيتم نقل جميع المشاركين تلقائيًا إلى الحزبين التاليين.
+  </p>
+
+  <p class="hint">
+
+    مثال:
+
+    <strong>1/2 → 3/4</strong>
+
+    ثم
+
+    <strong>57/58 → 59/60</strong>
+
+    ثم
+
+    <strong>59/60 → 1/2</strong>
+
+  </p>
+
+
+  <button
+    class="primary"
+    id="startBtn"
+  >
+    انتقل للختمة التالية
+  </button>
+
+
+  <div id="startMsg"></div>
+
+</div>
+
+
+<!-- =========================
+     PREVIOUS WEEK
+========================= -->
+
+<div class="card">
+
+  <h2>↩️ العودة للختمة السابقة</h2>
+
+  <p>
+    يعيد جميع المشاركين إلى الحزبين السابقين
+    وينقص رقم الأسبوع واحدًا.
+  </p>
+
+  <p class="hint">
+
+    مثال:
+
+    <strong>3/4 → 1/2</strong>
+
+    أو
+
+    <strong>1/2 → 59/60</strong>
+
+  </p>
+
+
+  <button
+    class="danger"
+    id="previousBtn"
+  >
+    ↩️ العودة للختمة السابقة
+  </button>
+
+
+  <div id="previousMsg"></div>
+
+</div>
+
+
+<!-- =========================
+     REPLACE PARTICIPANT
+========================= -->
+
+<div class="card">
+
+  <h2>🔄 استبدال مشارك</h2>
+
+  <p class="hint">
+
+    اختر مشاركًا واستبدله بشخص آخر.
+    الشخص الجديد سيأخذ نفس مكانه وأحزابه
+    وسجلات القراءة المرتبطة بهذا المكان.
+
+  </p>
+
+
+  <select id="replaceParticipant">
+
+    <option value="">
+      -- اختر المشارك الحالي --
+    </option>
+
+  </select>
+
+
+  <input
+    id="newParticipantName"
+    type="text"
+    placeholder="اسم المشارك الجديد"
+  >
+
+
+  <button
+    class="primary"
+    id="replaceBtn"
+  >
+    🔄 استبدال المشارك
+  </button>
+
+
+  <div id="replaceMsg"></div>
+
+</div>
+
+
+<!-- =========================
+     RESET WEEK
+========================= -->
+
+<div class="card">
+
+  <h2>⚠️ إعادة ضبط الأسبوع الحالي</h2>
+
+  <p>
+    تحذف حالات الإتمام للأسبوع الحالي فقط.
+  </p>
+
+
+  <button
+    class="danger"
+    id="resetBtn"
+  >
+    إعادة ضبط حالات هذا الأسبوع
+  </button>
+
+
+  <div id="resetMsg"></div>
+
+</div>
+
+
+</section>
+
+</main>
+
+
+<script>
+
+
+/* =================================
+   SUPABASE
+================================= */
+
+
+const SUPABASE_URL ="https://ajdhuxavcsgythitombr.supabase.co";
+
+
+const SUPABASE_ANON_KEY ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqZGh1eGF2Y3NneXRoaXRvbWJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NjgxMTcsImV4cCI6MjEwNzA0NDExN30.9uexJt74s1UTfsoVeBdd2pfGaCoXO823fWyTJVtBflo";
+
+
+const sb =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+
+let settings = null;
+
+let people = [];
+
+let doneSet = new Set();
+
+
+/* =================================
+   LOGIN
+================================= */
+
+async function login() {
+
+  const email =
+    document.getElementById(
+      "email"
+    ).value.trim();
+
+
+  const password =
+    document.getElementById(
+      "password"
+    ).value;
+
+
+  const {
+    error
+  } =
+    await sb.auth.signInWithPassword({
+
+      email,
+      password
+
+    });
+
+
+  if (error) {
+
+    document.getElementById(
+      "loginMsg"
+    ).innerHTML =
+
+      `<div class="warning">
+        ${escapeHtml(error.message)}
+      </div>`;
+
+    return;
+
+  }
+
+
+  await checkAdmin();
+
+}
+
+
+/* =================================
+   CHECK ADMIN
+================================= */
+
+async function checkAdmin() {
+
+  const {
+    data: {
+      user
+    }
+  } =
+    await sb.auth.getUser();
+
+
+  if (!user) return;
+
+
+  const {
+    data,
+    error
+  } =
+    await sb
+      .from("admins")
+      .select("user_id")
+      .eq(
+        "user_id",
+        user.id
+      )
+      .maybeSingle();
+
+
+  if (error || !data) {
+
+    await sb.auth.signOut();
+
+
+    document.getElementById(
+      "loginMsg"
+    ).innerHTML =
+
+      '<div class="warning">هذا الحساب ليس مشرفًا.</div>';
+
+    return;
+
+  }
+
+
+  document.getElementById(
+    "loginCard"
+  ).classList.add("hidden");
+
+
+  document.getElementById(
+    "adminApp"
+  ).classList.remove("hidden");
+
+
+  await loadAdmin();
+
+}
+
+
+/* =================================
+   LOAD ADMIN
+================================= */
+
+async function loadAdmin() {
+
+
+  /* SETTINGS */
+
+  const {
+    data: s,
+    error: se
+  } =
+    await sb
+      .from("khatma_settings")
+      .select("*")
+      .eq("id", 1)
+      .single();
+
+
+  if (se) {
+
+    return adminError(
+      se.message
+    );
+
+  }
+
+
+  settings = s;
+
+
+  /* PARTICIPANTS */
+
+  const {
+    data: p,
+    error: pe
+  } =
+    await sb
+      .from("participants")
+      .select(
+        "id,name,current_hizb_1,current_hizb_2"
+      )
+      .eq(
+        "active",
+        true
+      )
+      .order("id");
+
+
+  if (pe) {
+
+    return adminError(
+      pe.message
+    );
+
+  }
+
+
+  people = p || [];
+
+
+  /* COMPLETIONS */
+
+  const {
+    data: c,
+    error: ce
+  } =
+    await sb
+      .from("week_completions")
+      .select(
+        "participant_id,completed,completed_at"
+      )
+      .eq(
+        "week_number",
+        settings.current_week
+      )
+      .eq(
+        "completed",
+        true
+      );
+
+
+  if (ce) {
+
+    return adminError(
+      ce.message
+    );
+
+  }
+
+
+  doneSet =
+    new Set(
+      (c || []).map(
+        x => x.participant_id
+      )
+    );
+
+
+  /* WEEK */
+
+  document.getElementById(
+    "week"
+  ).textContent =
+    "الأسبوع " +
+    settings.current_week;
+
+
+  /* STATS */
+
+  const done =
+    doneSet.size;
+
+
+  const left =
+    people.length -
+    done;
+
+
+  const pct =
+    people.length
+      ? Math.round(
+          done /
+          people.length *
+          100
+        )
+      : 0;
+
+
+  document.getElementById(
+    "done"
+  ).textContent =
+    done;
+
+
+  document.getElementById(
+    "left"
+  ).textContent =
+    left;
+
+
+  document.getElementById(
+    "percent"
+  ).textContent =
+    pct + "%";
+
+
+  document.getElementById(
+    "bar"
+  ).style.width =
+    pct + "%";
+
+
+  /* SPLIT */
+
+  const completedPeople =
+    people.filter(
+      p => doneSet.has(p.id)
+    );
+
+
+  const pendingPeople =
+    people.filter(
+      p => !doneSet.has(p.id)
+    );
+
+
+  /* DONE */
+
+  document.getElementById(
+    "donePeople"
+  ).innerHTML =
+
+    completedPeople.length
+
+      ? completedPeople
+          .map(
+            p => personHTML(
+              p,
+              true
+            )
+          )
+          .join("")
+
+      : `
+        <div class="hint">
+          لا يوجد مشاركون مؤكّدون بعد.
+        </div>
+      `;
+
+
+  /* PENDING */
+
+  document.getElementById(
+    "pendingPeople"
+  ).innerHTML =
+
+    pendingPeople.length
+
+      ? pendingPeople
+          .map(
+            p => personHTML(
+              p,
+              false
+            )
+          )
+          .join("")
+
+      : `
+        <div class="success">
+          🎉 الجميع قرأوا!
+        </div>
+      `;
+
+
+  /* REPLACE SELECT */
+
+  const replaceSelect =
+    document.getElementById(
+      "replaceParticipant"
+    );
+
+
+  replaceSelect.innerHTML =
+    `
+      <option value="">
+        -- اختر المشارك الحالي --
+      </option>
+    `;
+
+
+  people.forEach(p => {
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+
+    option.value =
+      p.id;
+
+
+    option.textContent =
+      `${p.name} (${p.current_hizb_1}/${p.current_hizb_2})`;
+
+
+    replaceSelect.appendChild(
+      option
+    );
+
+  });
+
+}
+
+
+/* =================================
+   PERSON HTML
+================================= */
+
+function personHTML(
+  p,
+  completed
+) {
+
+  const hizb =
+    `${p.current_hizb_1}/${p.current_hizb_2}`;
+
+
+  return `
+
+    <div class="person ${
+      completed
+        ? "done"
+        : ""
+    }">
+
+      <span>
+
+        ${
+          completed
+            ? "✅"
+            : "⏳"
+        }
+
+        ${escapeHtml(
+          p.name
+        )}
+
+        <strong>
+          (${hizb})
+        </strong>
+
+      </span>
+
+
+      <button
+        class="${
+          completed
+            ? "small-danger"
+            : "small-ok"
+        }"
+        onclick="toggleCompletion(
+          ${p.id},
+          ${completed}
+        )"
+      >
+
+        ${
+          completed
+            ? "إلغاء"
+            : "تأكيد تمّ"
+        }
+
+      </button>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =================================
+   TOGGLE COMPLETION
+================================= */
+
+async function toggleCompletion(
+  id,
+  current
+) {
+
+  const {
+    error
+  } =
+    await sb.rpc(
+      "admin_set_completion",
+      {
+        p_participant_id:
+          id,
+
+        p_completed:
+          !current
+      }
+    );
+
+
+  if (error) {
+
+    alert(
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  await loadAdmin();
+
+}
+
+
+/* =================================
+   NEXT WEEK
+================================= */
+
+async function startNextWeek() {
+
+  if (
+    !confirm(
+      "سيتم نقل جميع المشاركين إلى الحزبين التاليين وبدء أسبوع جديد. هل أنت متأكد؟"
+    )
+  ) return;
+
+
+  const {
+    error
+  } =
+    await sb.rpc(
+      "admin_start_next_week"
+    );
+
+
+  if (error) {
+
+    document.getElementById(
+      "startMsg"
+    ).innerHTML =
+
+      `<div class="warning">
+        ${escapeHtml(
+          error.message
+        )}
+      </div>`;
+
+    return;
+
+  }
+
+
+  document.getElementById(
+    "startMsg"
+  ).innerHTML =
+
+    `
+      <div class="success">
+        ✅ تم الانتقال للختمة التالية.
+      </div>
+    `;
+
+
+  await loadAdmin();
+
+}
+
+
+/* =================================
+   PREVIOUS WEEK
+================================= */
+
+async function previousWeek() {
+
+  if (
+    !confirm(
+      "هل أنت متأكد من العودة إلى الختمة السابقة؟"
+    )
+  ) return;
+
+
+  const {
+    error
+  } =
+    await sb.rpc(
+      "admin_previous_week"
+    );
+
+
+  if (error) {
+
+    document.getElementById(
+      "previousMsg"
+    ).innerHTML =
+
+      `<div class="warning">
+        ${escapeHtml(
+          error.message
+        )}
+      </div>`;
+
+    return;
+
+  }
+
+
+  document.getElementById(
+    "previousMsg"
+  ).innerHTML =
+
+    `
+      <div class="success">
+        ↩️ تم الرجوع إلى الختمة السابقة.
+      </div>
+    `;
+
+
+  await loadAdmin();
+
+}
+
+
+/* =================================
+   REPLACE PARTICIPANT
+================================= */
+
+async function replaceParticipant() {
+
+  const participantId =
+    document.getElementById(
+      "replaceParticipant"
+    ).value;
+
+
+  const newName =
+    document.getElementById(
+      "newParticipantName"
+    ).value.trim();
+
+
+  const msg =
+    document.getElementById(
+      "replaceMsg"
+    );
+
+
+  if (!participantId) {
+
+    msg.innerHTML =
+      `
+        <div class="warning">
+          اختر المشارك الذي تريد استبداله.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  if (!newName) {
+
+    msg.innerHTML =
+      `
+        <div class="warning">
+          أدخل اسم المشارك الجديد.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  const oldParticipant =
+    people.find(
+      p =>
+        p.id ==
+        participantId
+    );
+
+
+  if (!oldParticipant) {
+
+    return;
+
+  }
+
+
+  if (
+    !confirm(
+      `هل تريد استبدال "${oldParticipant.name}" بـ "${newName}"؟\n\nسيحتفظ المشارك الجديد بنفس الأحزاب وسجل القراءة.`
+    )
+  ) return;
+
+
+  const {
+    error
+  } =
+    await sb.rpc(
+      "admin_replace_participant",
+      {
+        p_participant_id:
+          Number(
+            participantId
+          ),
+
+        p_new_name:
+          newName
+      }
+    );
+
+
+  if (error) {
+
+    msg.innerHTML =
+      `
+        <div class="warning">
+          ${escapeHtml(
+            error.message
+          )}
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  msg.innerHTML =
+    `
+      <div class="success">
+        ✅ تم استبدال المشارك بنجاح.
+      </div>
+    `;
+
+
+  document.getElementById(
+    "newParticipantName"
+  ).value = "";
+
+
+  document.getElementById(
+    "replaceParticipant"
+  ).value = "";
+
+
+  await loadAdmin();
+
+}
+
+
+/* =================================
+   RESET WEEK
+================================= */
+
+async function resetWeek() {
+
+  if (
+    !confirm(
+      "هل تريد حذف جميع حالات الإتمام لهذا الأسبوع؟"
+    )
+  ) return;
+
+
+  const {
+    error
+  } =
+    await sb.rpc(
+      "admin_reset_current_week"
+    );
+
+
+  if (error) {
+
+    alert(
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  document.getElementById(
+    "resetMsg"
+  ).innerHTML =
+
+    `
+      <div class="success">
+        تمّت إعادة ضبط الأسبوع.
+      </div>
+    `;
+
+
+  await loadAdmin();
+
+}
+
+
+/* =================================
+   BUTTONS
+================================= */
+
+document.getElementById(
+  "loginBtn"
+).onclick =
+  login;
+
+
+document.getElementById(
+  "logoutBtn"
+).onclick =
+  async () => {
+
+    await sb.auth.signOut();
+
+    location.reload();
+
+  };
+
+
+document.getElementById(
+  "startBtn"
+).onclick =
+  startNextWeek;
+
+
+document.getElementById(
+  "previousBtn"
+).onclick =
+  previousWeek;
+
+
+document.getElementById(
+  "replaceBtn"
+).onclick =
+  replaceParticipant;
+
+
+document.getElementById(
+  "resetBtn"
+).onclick =
+  resetWeek;
+
+
+/* =================================
+   ERROR
+================================= */
+
+function adminError(x) {
+
+  alert(x);
+
+}
+
+
+/* =================================
+   ESCAPE HTML
+================================= */
+
+function escapeHtml(s) {
+
+  return String(
+    s
+  ).replace(
+    /[&<>"']/g,
+    m => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[m])
+  );
+
+}
+
+
+/* =================================
+   SESSION
+================================= */
+
+(async () => {
+
+  const {
+    data: {
+      session
+    }
+  } =
+    await sb.auth.getSession();
+
+
+  if (session) {
+
+    await checkAdmin();
+
+  }
+
+})();
+
+
+/* =================================
+   REALTIME
+================================= */
+
+sb.channel(
+  "admin-live"
+)
+
+.on(
+  "postgres_changes",
+  {
+    event: "*",
+    schema: "public",
+    table: "week_completions"
+  },
+  loadAdmin
+)
+
+.on(
+  "postgres_changes",
+  {
+    event: "*",
+    schema: "public",
+    table: "participants"
+  },
+  loadAdmin
+)
+
+.on(
+  "postgres_changes",
+  {
+    event: "*",
+    schema: "public",
+    table: "khatma_settings"
+  },
+  loadAdmin
+)
+
+.subscribe();
+
+
+</script>
+
+</body>
+</html>
