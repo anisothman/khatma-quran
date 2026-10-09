@@ -87,16 +87,11 @@
    إعداد Supabase
 ========================= */
 
-const SUPABASE_URL =
-  "https://ajdhuxavcsgythitombr.supabase.co";
+const SUPABASE_URL ="https://ajdhuxavcsgythitombr.supabase.co";
 
-/*
-  استعمل مفتاح anon / publishable الأصلي
-  الموجود في ملفك السابق.
-  لا تستعمل service_role أو secret key هنا.
-*/
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImFqZGh1eGF2c2d5dGhpdG9tYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc5MTQ2ODExNywiZXhwIjoyMTA3MDQ0MTE3fQ.9uexJt74s1UTfsoVeBdd2pfGaCoXO823fWyTJVtBflo";
+
+const SUPABASE_ANON_KEY ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqZGh1eGF2Y3NneXRoaXRvbWJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NjgxMTcsImV4cCI6MjEwNzA0NDExN30.9uexJt74s1UTfsoVeBdd2pfGaCoXO823fWyTJVtBflo";
+
 
 const sb = supabase.createClient(
   SUPABASE_URL,
