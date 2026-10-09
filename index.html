@@ -1,78 +1,49 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ختمة القرآن الكريم</title>
 
-<title>ختمة القرآن</title>
-
-<link rel="stylesheet" href="style.css">
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
 
 <header>
-
   <h1>📖 ختمة القرآن الكريم</h1>
-
   <p>متابعة القراءة الأسبوعية</p>
-
 </header>
-
 
 <main class="container">
 
-
   <!-- معلومات الختمة -->
-
   <section class="card center">
-
-    <div class="badge" id="weekName">
-      الأسبوع 1
-    </div>
-
-    <p>
-      بعد إتمام قراءة الحزبين، اختر اسمك واضغط «تمّ».
-    </p>
-
+    <div class="badge" id="weekName">الأسبوع 1</div>
+    <p>بعد إتمام قراءة الحزبين المخصصين لك، اختر اسمك واضغط «تمّ».</p>
   </section>
 
-
   <!-- تسجيل الإتمام -->
-
   <section class="card">
-
     <h2>✅ تسجيل الإتمام</h2>
 
     <select id="participant">
-
-      <option value="">
-        -- اختر اسمك --
-      </option>
-
+      <option value="">-- اختر اسمك --</option>
     </select>
-
 
     <button class="primary" id="doneBtn">
       تمّ إنجاز الحزبين ✅
     </button>
 
-
-    <div id="message"></div>
-
+    <div id="message" aria-live="polite"></div>
   </section>
 
-
   <!-- الإحصائيات -->
-
   <section class="card">
-
     <div class="stats">
-
       <div>
         <strong id="done">0</strong>
         <span>أكملوا</span>
@@ -87,452 +58,311 @@
         <strong id="percent">0%</strong>
         <span>نسبة الإنجاز</span>
       </div>
-
     </div>
-
 
     <div class="bar">
       <div id="bar"></div>
     </div>
-
   </section>
-
 
   <!-- حالة المجموعة -->
-
   <section class="card">
-
     <h2>👥 حالة المجموعة</h2>
-
     <div id="list" class="list"></div>
-
   </section>
 
-
   <!-- دخول المشرف -->
-
   <section class="card center">
-
     <a class="admin-link" href="admin.html">
       🔐 دخول المشرف
     </a>
-
   </section>
-
 
 </main>
 
-
 <script>
-
+"use strict";
 
 /* =========================
-   Supabase
+   إعداد Supabase
 ========================= */
 
-const SUPABASE_URL ="https://ajdhuxavcsgythitombr.supabase.co";
+const SUPABASE_URL =
+  "https://ajdhuxavcsgythitombr.supabase.co";
 
+/*
+  استعمل مفتاح anon / publishable الأصلي
+  الموجود في ملفك السابق.
+  لا تستعمل service_role أو secret key هنا.
+*/
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImFqZGh1eGF2c2d5dGhpdG9tYnIiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc5MTQ2ODExNywiZXhwIjoyMTA3MDQ0MTE3fQ.9uexJt74s1UTfsoVeBdd2pfGaCoXO823fWyTJVtBflo";
 
-const SUPABASE_ANON_KEY ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqZGh1eGF2Y3NneXRoaXRvbWJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0NjgxMTcsImV4cCI6MjEwNzA0NDExN30.9uexJt74s1UTfsoVeBdd2pfGaCoXO823fWyTJVtBflo";
-
-
-const sb =
-  supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
-
+const sb = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
 
 let currentWeek = 1;
+let loading = false;
 
+/* =========================
+   عرض الأخطاء
+========================= */
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[char]);
+}
+
+function showError(message) {
+  const msg = document.getElementById("message");
+
+  msg.innerHTML =
+    '<div class="warning">تعذر تحميل البيانات: ' +
+    escapeHtml(message) +
+    "</div>";
+
+  console.error("Supabase error:", message);
+}
 
 /* =========================
    تحميل البيانات
 ========================= */
 
 async function load() {
+  if (loading) return;
+  loading = true;
 
-
-  /* إعدادات الختمة */
-
-  const {
-    data: settings,
-    error: se
-  } =
-    await sb
+  try {
+    const {
+      data: settings,
+      error: settingsError
+    } = await sb
       .from("khatma_settings")
       .select("*")
       .eq("id", 1)
       .single();
 
+    if (settingsError) {
+      showError(settingsError.message);
+      return;
+    }
 
-  if (se) {
+    currentWeek = settings.current_week;
 
-    return showError(se.message);
+    // عرض رقم الأسبوع فقط.
+    // لا يوجد عنصر id="hizb" في HTML.
+    document.getElementById("weekName").textContent =
+      "الأسبوع " + currentWeek;
 
-  }
+    /* المشاركون */
 
-
-  currentWeek =
-    settings.current_week;
-
-
-  document.getElementById("weekName").textContent =
-    "الأسبوع " + currentWeek;
-
-
-  document.getElementById("hizb").textContent =
-    settings.current_hizb_1 +
-    " و " +
-    settings.current_hizb_2;
-
-
-  /* المشاركون */
-
-  const {
-    data: people,
-    error: pe
-  } =
-    await sb
+    const {
+      data: people,
+      error: peopleError
+    } = await sb
       .from("participants")
-      .select(
-        "id,name,current_hizb_1,current_hizb_2"
-      )
+      .select("id,name,current_hizb_1,current_hizb_2")
       .eq("active", true)
       .order("id");
 
-
-  if (pe) {
-
-    return showError(pe.message);
-
-  }
-
-
-  /* الأشخاص الذين أكملوا */
-
-  const {
-    data: doneRows,
-    error: ce
-  } =
-    await sb
-      .from("week_completions")
-      .select(
-        "participant_id,completed,completed_at"
-      )
-      .eq(
-        "week_number",
-        currentWeek
-      )
-      .eq(
-        "completed",
-        true
-      );
-
-
-  if (ce) {
-
-    return showError(ce.message);
-
-  }
-
-
-  const doneSet =
-    new Set(
-      (doneRows || [])
-        .map(
-          x => x.participant_id
-        )
-    );
-
-
-  /* =========================
-     قائمة اختيار الاسم
-  ========================= */
-
-  const select =
-    document.getElementById(
-      "participant"
-    );
-
-
-  select.innerHTML =
-    '<option value="">-- اختر اسمك --</option>';
-
-
-  people.forEach(p => {
-
-    const o =
-      document.createElement(
-        "option"
-      );
-
-
-    o.value =
-      p.id;
-
-
-    /*
-      الاسم + الحزبين
-      مثال:
-      أحمد الصالحي (1/2)
-    */
-
-    o.textContent =
-      `${p.name} (${p.current_hizb_1}/${p.current_hizb_2})`;
-
-
-    /*
-      إذا أكمل القراءة
-      لا يمكن اختياره مرة أخرى
-    */
-
-    if (
-      doneSet.has(p.id)
-    ) {
-
-      o.disabled = true;
-
+    if (peopleError) {
+      showError(peopleError.message);
+      return;
     }
 
+    /* القراءات المكتملة للأسبوع الحالي */
 
-    select.appendChild(o);
+    const {
+      data: doneRows,
+      error: completionError
+    } = await sb
+      .from("week_completions")
+      .select("participant_id,completed,completed_at")
+      .eq("week_number", currentWeek)
+      .eq("completed", true);
 
-  });
+    if (completionError) {
+      showError(completionError.message);
+      return;
+    }
 
+    const participants = people || [];
+    const completions = doneRows || [];
 
-  /* =========================
-     الإحصائيات
-  ========================= */
+    const doneSet = new Set(
+      completions.map(row => String(row.participant_id))
+    );
 
-  document.getElementById("done").textContent =
-    doneSet.size;
+    /* قائمة اختيار الاسم */
 
+    const select = document.getElementById("participant");
+    const previousValue = select.value;
 
-  document.getElementById("left").textContent =
-    people.length -
-    doneSet.size;
+    select.innerHTML =
+      '<option value="">-- اختر اسمك --</option>';
 
+    participants.forEach(person => {
+      const option = document.createElement("option");
 
-  const pct =
-    people.length
-      ? Math.round(
-          doneSet.size /
-          people.length *
-          100
-        )
+      option.value = person.id;
+
+      option.textContent =
+        `${person.name} (${person.current_hizb_1}/${person.current_hizb_2})`;
+
+      if (doneSet.has(String(person.id))) {
+        option.disabled = true;
+      }
+
+      select.appendChild(option);
+    });
+
+    // الاحتفاظ بالاختيار إن كان المشارك لم يكمل بعد.
+    if (
+      previousValue &&
+      participants.some(person =>
+        String(person.id) === previousValue &&
+        !doneSet.has(previousValue)
+      )
+    ) {
+      select.value = previousValue;
+    }
+
+    /* الإحصائيات */
+
+    const doneCount = participants.filter(person =>
+      doneSet.has(String(person.id))
+    ).length;
+
+    const remaining = Math.max(0, participants.length - doneCount);
+
+    const percentage = participants.length
+      ? Math.round(doneCount / participants.length * 100)
       : 0;
 
+    document.getElementById("done").textContent = doneCount;
+    document.getElementById("left").textContent = remaining;
+    document.getElementById("percent").textContent = percentage + "%";
+    document.getElementById("bar").style.width = percentage + "%";
 
-  document.getElementById("percent").textContent =
-    pct + "%";
+    /* حالة المجموعة */
 
+    document.getElementById("list").innerHTML =
+      participants.map(person => {
+        const completed = doneSet.has(String(person.id));
 
-  document.getElementById("bar").style.width =
-    pct + "%";
+        return `
+          <div class="person ${completed ? "done" : ""}">
+            <span>
+              ${completed ? "✅" : "⏳"}
+              ${escapeHtml(person.name)}
+              <strong>
+                (${escapeHtml(person.current_hizb_1)}/${escapeHtml(person.current_hizb_2)})
+              </strong>
+            </span>
 
+            <b>${completed ? "تمّ" : "لم يتم"}</b>
+          </div>
+        `;
+      }).join("");
 
-  /* =========================
-     حالة المجموعة
-  ========================= */
+    // مسح رسالة الخطأ السابقة بعد نجاح التحميل.
+    const msg = document.getElementById("message");
 
-  document.getElementById("list").innerHTML =
+    if (msg.querySelector(".warning")) {
+      msg.innerHTML = "";
+    }
 
-    people.map(p => `
-
-      <div class="person ${
-        doneSet.has(p.id)
-          ? "done"
-          : ""
-      }">
-
-        <span>
-
-          ${
-            doneSet.has(p.id)
-              ? "✅"
-              : "⏳"
-          }
-
-          ${escapeHtml(p.name)}
-
-          <strong>
-            (${p.current_hizb_1}/${p.current_hizb_2})
-          </strong>
-
-        </span>
-
-
-        <b>
-
-          ${
-            doneSet.has(p.id)
-              ? "تمّ"
-              : "لم يتم"
-          }
-
-        </b>
-
-      </div>
-
-    `).join("");
-
+  } catch (error) {
+    showError(error.message || "حدث خطأ غير متوقع");
+  } finally {
+    loading = false;
+  }
 }
 
-
 /* =========================
-   تسجيل الإتمام
+   تسجيل إتمام القراءة
 ========================= */
 
-document.getElementById(
-  "doneBtn"
-).onclick = async () => {
+document.getElementById("doneBtn").addEventListener("click", async () => {
+  const select = document.getElementById("participant");
+  const msg = document.getElementById("message");
+  const button = document.getElementById("doneBtn");
 
-
-  const id =
-    document.getElementById(
-      "participant"
-    ).value;
-
-
-  const msg =
-    document.getElementById(
-      "message"
-    );
-
+  const id = select.value;
 
   if (!id) {
-
     msg.innerHTML =
       '<div class="warning">اختر اسمك أولاً.</div>';
-
     return;
-
   }
 
+  button.disabled = true;
+  msg.textContent = "جارٍ تسجيل الإتمام...";
 
-  const {
-    error
-  } =
-    await sb.rpc(
-      "mark_my_completion",
-      {
-        p_participant_id:
-          Number(id)
-      }
-    );
+  try {
+    const { error } = await sb.rpc("mark_my_completion", {
+      p_participant_id: Number(id)
+    });
 
-
-  if (error) {
+    if (error) {
+      showError(error.message);
+      return;
+    }
 
     msg.innerHTML =
-      `<div class="warning">
-        ${escapeHtml(error.message)}
-      </div>`;
+      '<div class="success">✅ تم تسجيل إتمامك بنجاح.</div>';
 
-    return;
+    await load();
 
+  } catch (error) {
+    showError(error.message || "تعذر تسجيل الإتمام");
+  } finally {
+    button.disabled = false;
   }
-
-
-  msg.innerHTML =
-    '<div class="success">✅ تم تسجيل إتمامك بنجاح.</div>';
-
-
-  await load();
-
-};
-
+});
 
 /* =========================
-   رسالة الخطأ
-========================= */
-
-function showError(x) {
-
-  document.getElementById(
-    "message"
-  ).innerHTML =
-
-    '<div class="warning">' +
-    'خطأ في الاتصال بقاعدة البيانات: ' +
-    escapeHtml(x) +
-    '</div>';
-
-}
-
-
-/* =========================
-   حماية HTML
-========================= */
-
-function escapeHtml(s) {
-
-  return String(s).replace(
-    /[&<>"']/g,
-    m => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-    }[m])
-  );
-
-}
-
-
-/* =========================
-   تشغيل الموقع
+   التشغيل والتحديث المباشر
 ========================= */
 
 load();
 
-
-/* =========================
-   التحديث المباشر
-========================= */
-
-const channel =
-  sb.channel("khatma-live")
-
-
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "week_completions"
-      },
-      load
-    )
-
-
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "khatma_settings"
-      },
-      load
-    )
-
-
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "participants"
-      },
-      load
-    )
-
-
-    .subscribe();
-
-
+sb.channel("khatma-live")
+  .on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "week_completions"
+    },
+    () => load()
+  )
+  .on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "khatma_settings"
+    },
+    () => load()
+  )
+  .on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "participants"
+    },
+    () => load()
+  )
+  .subscribe();
 </script>
 
 </body>
